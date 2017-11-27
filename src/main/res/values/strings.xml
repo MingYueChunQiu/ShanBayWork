@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ShanBayWork</string>
+    <string name="query_word">查询单词</string>
+    <string name="load_bitmap">加载图片</string>
+</resources>
