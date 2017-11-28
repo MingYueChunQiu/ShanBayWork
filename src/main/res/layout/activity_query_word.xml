@@ -11,7 +11,7 @@
         android:background="@android:color/darker_gray"
         android:gravity="center"
         android:padding="@dimen/tv_padding"
-        android:text="@string/query_word"
+        android:text="@string/scan_articles"
         android:textColor="@android:color/black"
         android:textSize="@dimen/tv_text_size"
         android:textStyle="bold" />

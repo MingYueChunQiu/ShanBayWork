@@ -2,4 +2,6 @@
     <string name="app_name">ShanBayWork</string>
     <string name="query_word">查询单词</string>
     <string name="load_bitmap">加载图片</string>
+    <string name="show_bitmaps">图片展示</string>
+    <string name="scan_articles">文本浏览</string>
 </resources>
