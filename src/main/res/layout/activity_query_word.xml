@@ -8,21 +8,27 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/darker_gray"
         android:gravity="center"
         android:padding="@dimen/tv_padding"
+        android:elevation="@dimen/btn_elevation"
         android:text="@string/scan_articles"
         android:textColor="@android:color/black"
         android:textSize="@dimen/tv_text_size"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:background="@color/slight_blue"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/tv_english_article"
+            android:id="@+id/tv_show_article"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:lineSpacingMultiplier="1.5"
+            android:paddingTop="@dimen/tv_content_padding_top_bottom"
+            android:paddingLeft="@dimen/tv_content_padding_left_right"
+            android:paddingRight="@dimen/tv_content_padding_left_right"
+            android:paddingBottom="@dimen/tv_content_padding_top_bottom"/>
     </ScrollView>
 </LinearLayout>

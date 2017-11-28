@@ -5,4 +5,6 @@
     <dimen name="btn_text_size">20sp</dimen>
     <dimen name="tv_padding">10dp</dimen>
     <dimen name="tv_text_size">25sp</dimen>
+    <dimen name="tv_content_padding_top_bottom">20dp</dimen>
+    <dimen name="tv_content_padding_left_right">15dp</dimen>
 </resources>

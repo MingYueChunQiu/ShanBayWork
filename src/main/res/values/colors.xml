@@ -5,4 +5,5 @@
     <color name="colorAccent">#FF4081</color>
     <!--浅青色-->
     <color name="slight_cyan">#C1FFC1</color>
+    <color name="slight_blue">#00FFFF</color>
 </resources>
