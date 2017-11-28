@@ -3,6 +3,7 @@ package com.shanbay.shanbaywork.main.activity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.widget.ListView;
 
 import com.shanbay.shanbaywork.R;
 
@@ -22,9 +23,19 @@ import com.shanbay.shanbaywork.R;
 
 public class LoadBitmapActivity extends Activity {
 
+    private ListView lvLoadBitmap;//显示图片的列表控件
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_load_bitmap);
+        init();
+    }
+
+    /**
+     * 初始化绑定控件
+     */
+    private void init() {
+        lvLoadBitmap = findViewById(R.id.lv_show_bitmaps);
     }
 }

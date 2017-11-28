@@ -10,14 +10,15 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/tv_padding"
         android:gravity="center"
+        android:elevation="@dimen/btn_elevation"
         android:textStyle="bold"
         android:textSize="@dimen/tv_text_size"
         android:textColor="@android:color/black"
         android:text="@string/show_bitmaps"
-        android:background="@android:color/darker_gray"/>
+        android:background="@color/slight_blue"/>
 
     <ListView
         android:id="@+id/lv_show_bitmaps"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></ListView>
+        android:layout_height="match_parent"/>
 </LinearLayout>
