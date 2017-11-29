@@ -1,11 +1,23 @@
 package com.shanbay.shanbaywork.main.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.FutureTarget;
+import com.bumptech.glide.request.target.Target;
 import com.shanbay.shanbaywork.R;
+import com.shanbay.shanbaywork.constants.UrlConstants;
+
+import java.io.File;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by 明月春秋 on 2017/11/27.
@@ -25,11 +37,21 @@ public class LoadBitmapActivity extends Activity {
 
     private ListView lvLoadBitmap;//显示图片的列表控件
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_load_bitmap);
         init();
+        ImageView ivTest = findViewById(R.id.iv_test);
+        loadBitmap();
+        Glide.with(this).load(UrlConstants.BITMAP_1).into(ivTest);
+        lvLoadBitmap.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                loadBitmap();
+            }
+        });
     }
 
     /**
@@ -37,5 +59,30 @@ public class LoadBitmapActivity extends Activity {
      */
     private void init() {
         lvLoadBitmap = findViewById(R.id.lv_show_bitmaps);
+    }
+
+    private void loadBitmap(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Context context = getApplicationContext();
+                FutureTarget<File> futureTarget = Glide.with(context).load(UrlConstants.BITMAP_1)
+                        .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+                try {
+                    final File imageFile = futureTarget.get();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(LoadBitmapActivity.this, imageFile.getPath() + "", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
     }
 }
