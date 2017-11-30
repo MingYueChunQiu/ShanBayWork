@@ -4,12 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.request.target.Target;
@@ -17,6 +24,8 @@ import com.shanbay.shanbaywork.R;
 import com.shanbay.shanbaywork.constants.UrlConstants;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -44,8 +53,9 @@ public class LoadBitmapActivity extends Activity {
         setContentView(R.layout.activity_load_bitmap);
         init();
         ImageView ivTest = findViewById(R.id.iv_test);
-        loadBitmap();
+//        loadBitmap();
         Glide.with(this).load(UrlConstants.BITMAP_1).into(ivTest);
+        add();
         lvLoadBitmap.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -73,7 +83,7 @@ public class LoadBitmapActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(LoadBitmapActivity.this, imageFile.getPath() + "", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoadBitmapActivity.this, imageFile.getAbsolutePath() + "", Toast.LENGTH_SHORT).show();
                         }
                     });
                 } catch (InterruptedException e) {
@@ -84,5 +94,31 @@ public class LoadBitmapActivity extends Activity {
             }
         }).start();
 
+    }
+
+    private void add(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        StringRequest request = new StringRequest("https://api.shanbay.com/bdc/search/",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("获取", response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> map = new HashMap<>();
+//                map.put("client_id", "bb59a131d69312c2e70f");
+//                map.put("response_type", "code");
+                map.put("word", "word");
+                return map;
+            }
+        };
+        queue.add(request);
     }
 }
