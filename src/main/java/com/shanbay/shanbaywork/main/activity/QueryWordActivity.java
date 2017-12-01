@@ -73,6 +73,9 @@ public class QueryWordActivity extends Activity {
      *          需要关闭的流资源
      */
     private void closeStream(Reader reader) {
+        if (reader == null){
+            return;
+        }
         try {
             reader.close();
         } catch (IOException e) {
