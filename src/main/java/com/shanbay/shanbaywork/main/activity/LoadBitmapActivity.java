@@ -21,10 +21,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.request.target.Target;
 import com.shanbay.shanbaywork.R;
-import com.shanbay.shanbaywork.constants.UrlConstants;
+import com.shanbay.shanbaywork.constants.BitmapUrlConstants;
+import com.shanbay.shanbaywork.model.adapter.BitmapAdapter;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -45,80 +48,54 @@ import java.util.concurrent.ExecutionException;
 public class LoadBitmapActivity extends Activity {
 
     private ListView lvLoadBitmap;//显示图片的列表控件
-
+    private List<String> bitmapList = null;//图片资源集合
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_load_bitmap);
         init();
-        ImageView ivTest = findViewById(R.id.iv_test);
-//        loadBitmap();
-        Glide.with(this).load(UrlConstants.BITMAP_1).into(ivTest);
-        add();
-        lvLoadBitmap.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                loadBitmap();
-            }
-        });
+        //        loadBitmap();
     }
 
     /**
-     * 初始化绑定控件
+     * 初始化绑定控件，并设置相关资源
      */
     private void init() {
         lvLoadBitmap = findViewById(R.id.lv_show_bitmaps);
+        if (bitmapList == null){
+            bitmapList = new ArrayList<>();
+        }
+        for (int i = 0; i < BitmapUrlConstants.bitmaps.length; i ++){
+            bitmapList.add(BitmapUrlConstants.bitmaps[i]);
+        }
+        BitmapAdapter adapter = new BitmapAdapter(this, bitmapList);
+        lvLoadBitmap.setAdapter(adapter);
     }
 
-    private void loadBitmap(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final Context context = getApplicationContext();
-                FutureTarget<File> futureTarget = Glide.with(context).load(UrlConstants.BITMAP_1)
-                        .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-                try {
-                    final File imageFile = futureTarget.get();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(LoadBitmapActivity.this, imageFile.getAbsolutePath() + "", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+//    private void loadBitmap(){
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                final Context context = getApplicationContext();
+//                FutureTarget<File> futureTarget = Glide.with(context).load(BitmapUrlConstants.BITMAP_1)
+//                        .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+//                try {
+//                    final File imageFile = futureTarget.get();
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Toast.makeText(LoadBitmapActivity.this, imageFile.getAbsolutePath() + "", Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                } catch (ExecutionException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
+//
+//    }
 
-    }
-
-    private void add(){
-        RequestQueue queue = Volley.newRequestQueue(this);
-        StringRequest request = new StringRequest("https://api.shanbay.com/bdc/search/",
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("获取", response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        }){
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> map = new HashMap<>();
-//                map.put("client_id", "bb59a131d69312c2e70f");
-//                map.put("response_type", "code");
-                map.put("word", "word");
-                return map;
-            }
-        };
-        queue.add(request);
-    }
 }

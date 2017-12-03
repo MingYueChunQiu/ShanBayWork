@@ -8,7 +8,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.MotionEvent;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,9 +24,14 @@ import java.util.regex.Pattern;
 public class SelectableView extends android.support.v7.widget.AppCompatTextView {
 
     private TextPaint mTextPaint;//文本画笔
+    private OnWordSelectedListener mListener = null;//监听单词被选中的回调事件
+    private Context mContext;
+    private int selectedIndex = -1 , selectedNum = -1;//记录选中单词的索引位置以及行数
+    private boolean[] notZoomedFlags;//记录没有被缩放的文本行
 
     public SelectableView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
     }
 
     /**
@@ -37,6 +42,7 @@ public class SelectableView extends android.support.v7.widget.AppCompatTextView 
     private void drawAlignText(Canvas canvas){
         Layout mLayout = getLayout();
         setTextPaint();
+        notZoomedFlags = new boolean[getLineCount()];
         String content = getText().toString();
         int currentOffsetY = getPaddingTop();
         currentOffsetY += getTextSize();
@@ -50,14 +56,18 @@ public class SelectableView extends android.support.v7.widget.AppCompatTextView 
             if (judgeLineNeedZoom(line)){
                 //如果是最后一行，则直接进行绘制
                 if (i == (lines - 1)){
-                    canvas.drawText(line, getPaddingLeft(), currentOffsetY, mTextPaint);
+                    notZoomedFlags[i] = true;
+                    drawNotZoomedText(canvas, line, getPaddingLeft(), currentOffsetY, i);
+//                    canvas.drawText(line, getPaddingLeft(), currentOffsetY, mTextPaint);
                 }
                 else {
-                    drawAlignLineText(canvas, line, wordsWidth, currentOffsetY);
+                    drawAlignLineText(canvas, line, wordsWidth, currentOffsetY, i);
                 }
             }
             else {
-                canvas.drawText(line, getPaddingLeft(), currentOffsetY, mTextPaint);
+                notZoomedFlags[i] = true;
+                drawNotZoomedText(canvas, line, getPaddingLeft(), currentOffsetY, i);
+//                canvas.drawText(line, getPaddingLeft(), currentOffsetY, mTextPaint);
             }
             currentOffsetY += getLineHeight();
         }
@@ -85,7 +95,6 @@ public class SelectableView extends android.support.v7.widget.AppCompatTextView 
         if (line.length() == 0){
             return false;
         }
-        Log.d("行尾", (line.charAt(line.length() - 1) != '\n')+"");
         return line.charAt(line.length() - 1) != '\n';
     }
 
@@ -100,7 +109,7 @@ public class SelectableView extends android.support.v7.widget.AppCompatTextView 
      * @param currentOffsetY
      *          当前行文本的Y轴偏移量
      */
-    private void drawAlignLineText(Canvas canvas, String line, float width, int currentOffsetY){
+    private void drawAlignLineText(Canvas canvas, String line, float width, int currentOffsetY, int currentNum){
         //每行画笔的初始位置
         float currentOffsetX = getPaddingLeft();
         float viewWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();//真正文本区域宽度
@@ -117,13 +126,13 @@ public class SelectableView extends android.support.v7.widget.AppCompatTextView 
                 for (int j = 0; j < singleLength; j ++){
                     String charWord = String.valueOf(singleWord.charAt(j));
                     float charWidth = StaticLayout.getDesiredWidth(charWord, mTextPaint);
-                    canvas.drawText(charWord, currentOffsetX, currentOffsetY, mTextPaint);
+                    drawZoomedText(canvas, charWord, currentOffsetX, currentOffsetY, 0, currentNum);
                     currentOffsetX += (charWidth + singleInsertBlank);
                 }
             }
             else {
                 float wordWidth = StaticLayout.getDesiredWidth(singleWord, mTextPaint);
-                canvas.drawText(singleWord, currentOffsetX, currentOffsetY, mTextPaint);
+                drawZoomedText(canvas, singleWord, currentOffsetX, currentOffsetY, 0, currentNum);
                 currentOffsetX += (wordWidth + insertBlank);
             }
         }
@@ -134,14 +143,182 @@ public class SelectableView extends android.support.v7.widget.AppCompatTextView 
         for (int i = 0; i < words.length; i ++){
             String word = words[i] + " ";
             float wordWidth = StaticLayout.getDesiredWidth(word, mTextPaint);
-            canvas.drawText(word, currentOffsetX, currentOffsetY, mTextPaint);
+            drawZoomedText(canvas, word, currentOffsetX, currentOffsetY, i, currentNum);
             currentOffsetX += (wordWidth + insertBlank);
         }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        //不使用TextView原生绘制方法，采用文本两端对齐绘制方法
         drawAlignText(canvas);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN){
+            setSelectedText(-1, -1);
+            float currentX = event.getX();
+            float currentY = event.getY();
+            //如果用户触摸位置超出了文本界限，则直接返回
+            if (currentX <= getPaddingLeft() || currentX >= (getMeasuredWidth() - getPaddingRight())){
+                return false;
+            }
+            if (currentY <= getPaddingTop() || currentY >= (getHeight() - getPaddingBottom())){
+                return false;
+            }
+
+            Log.d("xyj", currentX + " " + currentY);
+            int lineHeight = getLineHeight();
+            //计算当前用户选中行数，获取该行文本
+            int lineNumber = Math.round(currentY / lineHeight) - 1;
+            int start = getLayout().getLineStart(lineNumber);
+            int end = getLayout().getLineEnd(lineNumber);
+            String line = getText().toString().substring(start, end);
+            String[] words = line.split(" ");
+
+            int offsetX = getPaddingLeft();//各个单词的起始位置
+            float wordsWidth = StaticLayout.getDesiredWidth(getText().toString(), start, end, mTextPaint);
+            //每行所有的空白间距
+            int length = words.length;
+            float viewWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();//真正文本区域宽度
+            float insertBlank = (viewWidth - wordsWidth) / (length - 1);
+            for (int i = 0; i < length; i ++){
+                String word = words[i] + " ";
+                float wordWidth = StaticLayout.getDesiredWidth(word, mTextPaint);
+                //判断当前用户手指位置是否属于单词
+                if (currentX >= offsetX && currentX <= (offsetX + wordWidth)){
+                    Log.d("选中单词", words[i]);
+                    setSelectedText(i, lineNumber);
+                    if (mListener != null){
+                        mListener.onSelected(words[i]);
+                    }
+                    break;
+                }
+                if (notZoomedFlags[lineNumber]){
+                    offsetX += wordWidth;
+                }
+                else {
+                    offsetX += (wordWidth + insertBlank);
+                }
+            }
+            return true;
+        }
+
+        return super.onTouchEvent(event);
+    }
+
+    /**
+     * 当用户选中某个单词时，提供给外界进行回调，对选中单词进行处理
+     */
+    public interface OnWordSelectedListener{
+
+        /**
+         * 对选中单词的事件处理
+         * @param word
+         */
+        public void onSelected(String word);
+    }
+
+    /**
+     * 供外界设置对单词选中的监听事件
+     * @param listener
+     *          监听单词选中事件的监听器
+     */
+    public void setOnWordSelectedListener(OnWordSelectedListener listener){
+        mListener = listener;
+    }
+
+    private void setSelectedText(int selectedIndex, int selectedNum){
+        this.selectedIndex = selectedIndex;
+        this.selectedNum = selectedNum;
+        invalidate();
+    }
+
+    /**
+     * 绘制选中单词高亮
+     * @param canvas
+     *          绘制的画布
+     * @param word
+     *          绘制的单词
+     * @param currentX
+     *          绘制单词的X轴位置
+     * @param currentY
+     *          绘制单词的Y轴位置
+     */
+    private void drawSelectedText(Canvas canvas, String word, float currentX, float currentY){
+        //更改画笔颜色绘制高亮，然后再将画笔颜色还原
+        int color = mTextPaint.getColor();
+        mTextPaint.setColor(mContext.getResources().getColor(android.R.color.holo_orange_dark));
+        canvas.drawText(word, currentX, currentY, mTextPaint);
+        mTextPaint.setColor(color);
+    }
+
+    /**
+     * 根据条件判断，决定是绘制选中单词还是普通文本
+     * @param canvas
+     *          绘制的画布
+     * @param word
+     *          绘制的单词
+     * @param currentX
+     *          绘制单词的X轴位置
+     * @param currentY
+     *          绘制单词的Y轴位置
+     */
+    private void drawZoomedText(Canvas canvas, String word, float currentX, float currentY, int selectedIndex, int selectedNum){
+        if (this.selectedIndex == selectedIndex && this.selectedNum == selectedNum){
+            Log.d("索引", this.selectedIndex + " " + selectedIndex + " " + this.selectedNum + " " + selectedNum);
+            word = getEnglishWord(word);
+            drawSelectedText(canvas, word, currentX, currentY);
+        }
+        else {
+            canvas.drawText(word, currentX, currentY, mTextPaint);
+        }
+    }
+
+    /**
+     * 绘制未进行缩放的文本行，在是否选中单词状态下的文本样式
+     * @param canvas
+     *          绘制的画布
+     * @param line
+     *          绘制的文本行
+     * @param currentX
+     *          绘制行的X轴位置
+     * @param currentY
+     *          绘制行的Y轴位置
+     * @param selectedNum
+     *          绘制行的索引位置
+     */
+    private void drawNotZoomedText(Canvas canvas, String line, int currentX, int currentY, int selectedNum){
+        if (this.selectedNum == selectedNum){
+            Log.d("索引", this.selectedIndex + " "+ " " + this.selectedNum + " " + selectedNum);
+            String[] words = line.split(" ");
+            for (int i = 0; i < words.length; i ++){
+                String word = words[i] + " ";
+                float wordWidth = StaticLayout.getDesiredWidth(word, mTextPaint);
+                if (selectedIndex == i){
+                    word = getEnglishWord(word);
+                    drawSelectedText(canvas, word, currentX, currentY);
+                }
+                else {
+                    canvas.drawText(word, currentX, currentY, mTextPaint);
+                }
+                currentX += wordWidth;
+            }
+        }
+        else {
+            canvas.drawText(line, currentX, currentY, mTextPaint);
+        }
+    }
+
+    /**
+     * 将获取到的单词中，所有的非英文部分剔除
+     * @param word
+     *          需要进行分辨的单词
+     * @return
+     *          返回纯正的英文单词
+     */
+    private String getEnglishWord(String word){
+        return word.replaceAll("[^a-zA-Z]", "");
+    }
 }

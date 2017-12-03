@@ -1,34 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/slight_cyan"
-    android:orientation="vertical">
+    android:background="@color/slight_cyan">
 
-    <TextView
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/slight_blue"
+            android:elevation="@dimen/btn_elevation"
+            android:gravity="center"
+            android:padding="@dimen/tv_padding"
+            android:text="@string/scan_articles"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/tv_text_size"
+            android:textStyle="bold" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.shanbay.shanbaywork.view.SelectableView
+                android:id="@+id/sv_show_article"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:lineSpacingMultiplier="1.5"
+                android:paddingBottom="@dimen/tv_content_padding_top_bottom"
+                android:paddingLeft="@dimen/tv_content_padding_left_right"
+                android:paddingRight="@dimen/tv_content_padding_left_right"
+                android:paddingTop="@dimen/tv_content_padding_top_bottom" />
+        </ScrollView>
+    </LinearLayout>
+
+    <com.shanbay.shanbaywork.view.WordInfoView
+        android:id="@+id/wv_word_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="@dimen/tv_padding"
-        android:elevation="@dimen/btn_elevation"
-        android:text="@string/scan_articles"
-        android:textColor="@android:color/black"
-        android:textSize="@dimen/tv_text_size"
-        android:textStyle="bold"
-        android:background="@color/slight_blue"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.shanbay.shanbaywork.view.SelectableView
-            android:id="@+id/tv_show_article"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:lineSpacingMultiplier="1.5"
-            android:paddingTop="@dimen/tv_content_padding_top_bottom"
-            android:paddingLeft="@dimen/tv_content_padding_left_right"
-            android:paddingRight="@dimen/tv_content_padding_left_right"
-            android:paddingBottom="@dimen/tv_content_padding_top_bottom"/>
-    </ScrollView>
-</LinearLayout>
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
+</RelativeLayout>

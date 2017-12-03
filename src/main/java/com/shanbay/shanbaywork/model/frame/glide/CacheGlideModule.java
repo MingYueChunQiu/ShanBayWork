@@ -29,12 +29,13 @@ public class CacheGlideModule implements GlideModule {
     public void applyOptions(final Context context, GlideBuilder builder) {
         MemorySizeCalculator calculator = new MemorySizeCalculator.Builder(context).build();
         final int size = calculator.getMemoryCacheSize();
-        String fileDirectory = "images";
         builder.setDiskCache(new DiskCache.Factory() {
             @Nullable
             @Override
             public DiskCache build() {
-                File file = new File(context.getExternalCacheDir(), "images");
+                String path = context.getExternalCacheDir().getAbsolutePath();
+                String savePath = path.substring(0, path.indexOf("cache"));
+                File file = new File(savePath, "images");
                 file.mkdirs();
                 return DiskLruCacheWrapper.get(file, size);
             }

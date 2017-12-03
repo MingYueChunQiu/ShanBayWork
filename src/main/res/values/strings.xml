@@ -4,4 +4,5 @@
     <string name="load_bitmap">加载图片</string>
     <string name="show_bitmaps">图片展示</string>
     <string name="scan_articles">文章浏览</string>
+    <string name="user_authority">用户授权</string>
 </resources>
