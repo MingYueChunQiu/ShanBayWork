@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<litepal>
+    <dbname value="word.db"/>
+    <version value="1"/>
+    <list>
+        <mapping class="com.shanbay.shanbaywork.bean.WordBean"/>
+        <mapping class="com.shanbay.shanbaywork.bean.DataBean"/>
+        <mapping class="com.shanbay.shanbaywork.bean.EnDefinition"/>
+        <mapping class="com.shanbay.shanbaywork.bean.CnDefinition"/>
+        <mapping class="com.shanbay.shanbaywork.bean.AudioAddresses"/>
+        <mapping class="com.shanbay.shanbaywork.bean.Pronunciations"/>
+        <mapping class="com.shanbay.shanbaywork.bean.EnDefinitions"/>
+    </list>
+</litepal>

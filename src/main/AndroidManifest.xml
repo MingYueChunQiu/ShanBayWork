@@ -24,6 +24,7 @@
 
         <activity android:name=".main.activity.QueryWordActivity"/>
         <activity android:name=".main.activity.LoadBitmapActivity"/>
+        <activity android:name=".main.activity.AuthorityActivity"/>
     </application>
 
 </manifest>
